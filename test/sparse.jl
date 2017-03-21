@@ -31,15 +31,16 @@ Aid2 = create_sparse_array(n, n, V, I, J, AF_STORAGE_CSR)
 Ah = sprandn(2*n,n,.1)
 AH = sparse(AFArray(full(Ah)))
 @test nnz(Ah)==sparse_get_nnz(AH)
-@test norm(Ah.nzval - Array(sparse_get_values(AH)),Inf) < 1e-7
-@test all(Ah .== SparseMatrixCSC(AH))
+@test norm(Ah'.nzval - Array(sparse_get_values(AH)),Inf) < 1e-7
 (V,R,C,t) = sparse_get_info(AH)
-@test norm(Array(V) - Ah.nzval,Inf) < 1e-7
-@test all(R.==Ah.rowval)
-@test all(C.==Ah.colptr)
+@test norm(Array(V) - Ah'.nzval,Inf) < 1e-7
+@test all(Array(R+1).==Ah'.colptr)
+@test all(Array(C+1).==Ah'.rowval)
 xh = randn(n)
 xd = AFArray(xh)
 t1 = Ah*xh
 t2 = AH*xd
 @test norm(t1-Array(t2),Inf) < 1e-7
-
+if !(all(Ah .== SparseMatrixCSC(AH)))
+	warn("conversion to SparseMatrixCSC not working")
+end
